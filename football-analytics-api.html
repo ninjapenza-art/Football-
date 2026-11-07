@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Футбол-аналитик">
+<title>Футбол-аналитик</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap">
+<style>
+:root{--bg:#eef1ec;--card:#fbfcfa;--ink:#16233a;--mute:#5d6b7d;--line:#d5dbd2;--h:#1c7a5f;--d:#8a94a3;--a:#c2492b;--ok:#1c7a5f;--shadow:#fff0;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#101820;--card:#18232e;--ink:#e8edf3;--mute:#93a1b2;--line:#2b3a49;--h:#3fb58f;--d:#76849a;--a:#e07a5f;--ok:#3fb58f}}
+:root[data-theme="dark"]{--bg:#101820;--card:#18232e;--ink:#e8edf3;--mute:#93a1b2;--line:#2b3a49;--h:#3fb58f;--d:#76849a;--a:#e07a5f;--ok:#3fb58f}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 "Bricolage Grotesque",-apple-system,"Helvetica Neue",Arial,sans-serif;-webkit-text-size-adjust:100%}
+main{max-width:640px;margin:0 auto;padding:16px 14px 40px}
+h1{font-size:28px;font-weight:800;margin:6px 0 2px;letter-spacing:-.02em}
+h2{font-size:18px;margin:0 0 10px;font-weight:600}
+p.sub{margin:0 0 16px;color:var(--mute);font-size:14px}
+section{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:14px}
+.g{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+label{display:block;font-size:13px;color:var(--mute);margin-bottom:3px}
+input{width:100%;font:inherit;font-size:16px;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink)}
+input:focus{outline:2px solid var(--h);outline-offset:1px}
+.th{color:var(--h);font-weight:600}.ta{color:var(--a);font-weight:600}
+details{margin-top:10px}summary{cursor:pointer;color:var(--mute);font-size:14px}
+button.go{width:100%;padding:15px;border:0;border-radius:12px;background:var(--ink);color:var(--bg);font:inherit;font-weight:800;font-size:17px;margin-bottom:14px}
+.ml{display:block;width:100%;text-align:left;padding:10px;margin:6px 0;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit;font-size:15px}.ml small{display:block;color:var(--mute);font-size:12px}#st{font-size:13px;color:var(--mute);margin:8px 0;min-height:18px}.warn{color:var(--a)}.bar{display:flex;height:44px;border-radius:10px;overflow:hidden;font-weight:800;color:#fff;font-size:15px}
+.bar div{display:flex;align-items:center;justify-content:center;min-width:0}
+.legend{display:flex;justify-content:space-between;font-size:13px;color:var(--mute);margin-top:6px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+td,th{padding:7px 4px;border-bottom:1px solid var(--line);text-align:right;font-weight:400}
+td:first-child,th:first-child{text-align:left}th{color:var(--mute);font-size:12px}
+.row{display:flex;align-items:center;gap:8px;margin:7px 0;font-size:14px}
+.row .n{width:92px;flex:none}.row .t{flex:1;height:10px;background:var(--line);border-radius:5px;overflow:hidden}
+.row .t i{display:block;height:100%;background:var(--h)}.row .p{width:48px;text-align:right;font-weight:600}
+.val{color:var(--ok);font-weight:800}
+.note{font-size:12px;color:var(--mute);margin-top:8px}
+.big{font-size:15px;margin:2px 0 10px}
+#out{display:none}
+</style>
+</head>
+<body>
+<main>
+<h1>Футбол-аналитик</h1>
+<p class="sub">Статистика, травмы, составы, прогноз и коэффициенты подтягиваются из API-Football.</p>
+
+<section>
+<h2>Подключение</h2>
+<label>API-ключ (dashboard.api-football.com → My Access)</label>
+<input id="key" type="password" autocomplete="off" placeholder="ключ хранится только на вашем устройстве">
+<div class="g" style="margin-top:10px;align-items:end">
+<div><label>Дата матча</label><input id="dt" type="date"></div>
+<div><button class="go" id="ld" style="margin:0;padding:11px">Загрузить матчи</button></div>
+</div>
+<div id="st"></div>
+<input id="flt" placeholder="Фильтр: команда или лига" style="display:none">
+<div id="fl"></div>
+</section>
+
+<section>
+<h2>Матч</h2>
+<div class="g">
+<div><label class="th">Хозяева</label><input id="nh" value="Хозяева"></div>
+<div><label class="ta">Гости</label><input id="na" value="Гости"></div>
+<div><label>Средний тотал лиги</label><input id="lg" inputmode="decimal" value="2.7"></div>
+<div><label>Домашнее поле</label><input id="ha" inputmode="decimal" value="1.00"></div>
+</div>
+<p class="note">Данные подставляются автоматически и доступны для правки. Домашнее поле оставьте 1.00: дома и в гостях команды уже считаются отдельно.</p>
+</section>
+
+<section>
+<h2>Статистика</h2>
+<div class="g">
+<div><div class="th" style="margin-bottom:6px">Хозяева (дома)</div>
+<label>Забивают</label><input id="gfH" inputmode="decimal" value="1.6">
+<label style="margin-top:8px">Пропускают</label><input id="gaH" inputmode="decimal" value="1.0">
+<label style="margin-top:8px">Очки за 5 матчей</label><input id="fH" inputmode="numeric" value="9"></div>
+<div><div class="ta" style="margin-bottom:6px">Гости (в гостях)</div>
+<label>Забивают</label><input id="gfA" inputmode="decimal" value="1.2">
+<label style="margin-top:8px">Пропускают</label><input id="gaA" inputmode="decimal" value="1.4">
+<label style="margin-top:8px">Очки за 5 матчей</label><input id="fA" inputmode="numeric" value="6"></div>
+</div>
+<h2 style="margin-top:16px">Поправки на состав, %</h2>
+<div class="g">
+<div><label>Хозяева: потеря в атаке</label><input id="aH" inputmode="decimal" value="0"></div>
+<div><label>Хозяева: хуже оборона</label><input id="dH" inputmode="decimal" value="0"></div>
+<div><label>Гости: потеря в атаке</label><input id="aA" inputmode="decimal" value="0"></div>
+<div><label>Гости: хуже оборона</label><input id="dA" inputmode="decimal" value="0"></div>
+</div>
+<div id="inj"></div>
+<div id="lu"></div>
+<details><summary>Коэффициенты букмекера</summary>
+<div class="g3" style="margin-top:10px">
+<div><label>П1</label><input id="o1" inputmode="decimal"></div>
+<div><label>X</label><input id="ox" inputmode="decimal"></div>
+<div><label>П2</label><input id="o2" inputmode="decimal"></div>
+<div><label>ТБ 2.5</label><input id="oo" inputmode="decimal"></div>
+<div><label>ТМ 2.5</label><input id="ou" inputmode="decimal"></div>
+<div><label>Обе забьют</label><input id="ob" inputmode="decimal"></div>
+</div></details>
+<details><summary>Веса методов (%)</summary>
+<div class="g" style="margin-top:10px">
+<div><label>Пуассон + DC + форма + составы</label><input id="w1" inputmode="numeric" value="40"></div>
+<div><label>Чистый Пуассон</label><input id="w2" inputmode="numeric" value="15"></div>
+<div><label>Прогноз API-Football</label><input id="w3" inputmode="numeric" value="25"></div>
+<div><label>Форма</label><input id="w4" inputmode="numeric" value="20"></div>
+</div></details>
+</section>
+
+<button class="go" id="go">Рассчитать</button>
+
+<div id="out">
+<section><h2 id="title"></h2><div class="bar" id="bar"></div><div class="legend" id="leg"></div><p class="note" id="fair"></p></section>
+<section><h2>Методы</h2><table id="mt"></table></section>
+<section><h2>Тоталы и голы</h2><div id="tot"></div><p class="note" id="lam"></p></section>
+<section><h2>Ставки по вероятности</h2><table id="dc"></table></section>
+<section><h2>Вероятный счёт</h2><div id="sc"></div></section>
+<section id="vsec" style="display:none"><h2>Value относительно букмекера</h2><table id="vt"></table>
+<p class="note">Value = вероятность × коэффициент − 1.</p></section>
+<p class="note">Модель — статистическая оценка, а не гарантия. Ставьте только то, что готовы потерять.</p>
+</div>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const num=id=>{const x=parseFloat(String($(id).value).replace(',','.'));return isNaN(x)?null:x};
+const pc=x=>(x*100).toFixed(1)+'%';
+const fo=p=>p>0.001?(1/p).toFixed(2):'—';
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const st=(m,w)=>{$('st').className=w?'warn':'';$('st').textContent=m};
+const N=10;let FX=[],API=null;
+try{$('key').value=localStorage.getItem('afk')||''}catch(e){}
+(()=>{const d=new Date(),p=n=>String(n).padStart(2,'0');$('dt').value=d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())})();
+
+async function api(path){
+  const key=$('key').value.trim();
+  if(!key)throw new Error('Введите API-ключ.');
+  try{localStorage.setItem('afk',key)}catch(e){}
+  for(let t=0;t<2;t++){
+    const r=await fetch('https://v3.football.api-sports.io/'+path,{headers:{'x-apisports-key':key}});
+    const j=await r.json(),e=j.errors;
+    if(e&&(Array.isArray(e)?e.length:Object.keys(e).length)){
+      const m=JSON.stringify(e);
+      if(/rateLimit|too many/i.test(m)&&t==0){st('Лимит запросов в минуту, жду 60 секунд…',1);await sleep(61000);continue}
+      throw new Error(m)}
+    await sleep(700);return j.response}
+}
+$('ld').onclick=async()=>{
+  try{st('Загружаю матчи…');
+    FX=await api('fixtures?date='+$('dt').value+'&timezone=Europe/Warsaw');
+    if(!FX.length){st('На эту дату матчей нет.');$('fl').innerHTML='';return}
+    $('flt').style.display='block';$('flt').value='';list();st('Матчей: '+FX.length+'. Выберите матч.')
+  }catch(e){st('Ошибка: '+e.message,1)}};
+$('flt').oninput=list;
+function list(){
+  const q=$('flt').value.toLowerCase();
+  const a=FX.filter(f=>(f.teams.home.name+' '+f.teams.away.name+' '+f.league.name+' '+f.league.country).toLowerCase().includes(q)).slice(0,60);
+  $('fl').innerHTML=a.map((f,i)=>{const t=new Date(f.fixture.date).toLocaleTimeString('ru',{hour:'2-digit',minute:'2-digit'});
+    return `<button class="ml" data-i="${FX.indexOf(f)}">${esc(f.teams.home.name)} — ${esc(f.teams.away.name)}<small>${t} · ${esc(f.league.country)}, ${esc(f.league.name)}</small></button>`}).join('');
+  $('fl').querySelectorAll('button').forEach(b=>b.onclick=()=>analyze(FX[b.dataset.i]))}
+
+const pts=f=>{const s=(f||'').slice(-5);if(!s)return 7.5;let p=0;for(const c of s)p+=c=='W'?3:c=='D'?1:0;return p};
+const gv=x=>{const v=parseFloat(x);return isNaN(v)?null:v};
+async function teamStats(fx,id){
+  const r=await api(`teams/statistics?league=${fx.league.id}&season=${fx.league.season}&team=${id}`);
+  if(!r||!r.fixtures)throw new Error('Нет статистики команды (возможно, сезон недоступен на вашем тарифе).');return r}
+async function impact(fx,teamId,inj,xi,ts){
+  const rows=[];let att=0,def=0;
+  const gl=ts.goals.for.total.total||1,pl=ts.fixtures.played.total||1;
+  const list=inj.filter(x=>x.team.id==teamId&&!(xi&&xi.has(x.player.id))).slice(0,12);
+  list.sort((a,b)=>(a.player.type=='Missing Fixture'?0:1)-(b.player.type=='Missing Fixture'?0:1));
+  let n=0;
+  for(const x of list){
+    const w=x.player.type=='Missing Fixture'?1:0.5;let eff='нет данных',role='';
+    if(n<4){n++;
+      try{const r=await api(`players?id=${x.player.id}&season=${fx.league.season}`);
+        const ss=r[0]?.statistics||[];const s=ss.find(z=>z.league.id==fx.league.id)||ss[0];
+        if(s){const ap=s.games.appearences||0,mn=s.games.minutes||0,pos=s.games.position||'';role=pos;
+          const starter=ap>0&&mn/ap>=55&&ap>=0.3*pl;
+          const share=((s.goals.total||0)+0.5*(s.goals.assists||0))/gl;
+          const a=w*(starter?Math.min(0.25,share*0.7):share*0.2);
+          let d=0;if(pos=='Defender')d=starter?0.035:0.01;else if(pos=='Goalkeeper')d=starter?0.06:0.01;else if(pos=='Midfielder')d=starter?0.015:0.005;
+          d*=w;att+=a;def+=d;
+          eff=(starter?'основа':'запас')+(a>0.005?`, атака −${(a*100).toFixed(1)}%`:'')+(d>0?`, оборона +${(d*100).toFixed(1)}%`:'')}
+      }catch(e){eff='не удалось оценить'}}
+    rows.push([x.player.name,x.player.type=='Missing Fixture'?'out':'сомнение',role,eff])}
+  return{att:Math.min(30,att*100),def:Math.min(18,def*100),rows,extra:Math.max(0,inj.filter(x=>x.team.id==teamId).length-rows.length)}}
+
+async function analyze(fx){
+  try{
+    const H=fx.teams.home,A=fx.teams.away,id=fx.fixture.id;
+    $('nh').value=H.name;$('na').value=A.name;$('out').style.display='none';API=null;
+    ['o1','ox','o2','oo','ou','ob'].forEach(k=>$(k).value='');
+    st('Статистика команд…');
+    const tH=await teamStats(fx,H.id),tA=await teamStats(fx,A.id);
+    const hm=tH.fixtures.played.home>=3,am=tA.fixtures.played.away>=3;
+    const gfH=gv(hm?tH.goals.for.average.home:tH.goals.for.average.total),gaH=gv(hm?tH.goals.against.average.home:tH.goals.against.average.total);
+    const gfA=gv(am?tA.goals.for.average.away:tA.goals.for.average.total),gaA=gv(am?tA.goals.against.average.away:tA.goals.against.average.total);
+    $('gfH').value=gfH;$('gaH').value=gaH;$('gfA').value=gfA;$('gaA').value=gaA;
+    $('fH').value=pts(tH.form);$('fA').value=pts(tA.form);
+    $('lg').value=((gfH+gaH+gfA+gaA)/2).toFixed(2);$('ha').value='1.00';
+    let inj=[],lu=[],note='';
+    st('Травмы и дисквалификации…');
+    try{inj=await api('injuries?fixture='+id)}catch(e){note+='Травмы недоступны. '}
+    st('Составы…');
+    try{lu=await api('fixtures/lineups?fixture='+id)}catch(e){}
+    const xi={};lu.forEach(l=>xi[l.team.id]=new Set(l.startXI.map(p=>p.player.id)));
+    const hasLu=lu.length==2;
+    $('lu').innerHTML=hasLu?lu.map(l=>`<p class="note"><b>${esc(l.team.name)}</b> ${esc(l.formation||'')}: ${l.startXI.map(p=>esc(p.player.name)).join(', ')}</p>`).join(''):'<p class="note">Стартовые составы ещё не объявлены (обычно за 20–40 минут до матча). Пока учитываются только травмы и дисквалификации, повторите расчёт позже.</p>';
+    st('Оценка важности отсутствующих…');
+    const iH=await impact(fx,H.id,inj,hasLu?xi[H.id]:null,tH),iA=await impact(fx,A.id,inj,hasLu?xi[A.id]:null,tA);
+    $('aH').value=iH.att.toFixed(1);$('dH').value=iH.def.toFixed(1);$('aA').value=iA.att.toFixed(1);$('dA').value=iA.def.toFixed(1);
+    const tbl=(n,i)=>i.rows.length?`<tr><td colspan="4"><b>${esc(n)}</b></td></tr>`+i.rows.map(r=>`<tr><td>${esc(r[0])}</td><td>${r[1]}</td><td>${esc(r[2])}</td><td>${esc(r[3])}</td></tr>`).join('')+(i.extra?`<tr><td colspan="4">и ещё ${i.extra}</td></tr>`:''):'';
+    $('inj').innerHTML='<h2 style="margin-top:14px">Отсутствующие</h2>'+((tbl(H.name,iH)+tbl(A.name,iA))?'<table>'+tbl(H.name,iH)+tbl(A.name,iA)+'</table>':'<p class="note">Травм и дисквалификаций не найдено.</p>');
+    st('Прогноз и коэффициенты…');
+    try{const p=await api('predictions?fixture='+id);const pr=p[0]?.predictions?.percent;
+      if(pr)API={h:parseFloat(pr.home)/100,d:parseFloat(pr.draw)/100,a:parseFloat(pr.away)/100,adv:p[0].predictions.advice}}catch(e){}
+    try{const o=await api(`odds?fixture=${id}&bookmaker=8`);const bets=o[0]?.bookmakers?.[0]?.bets||[];
+      const val=(bid,v)=>{const b=bets.find(x=>x.id==bid);const z=b?.values.find(x=>x.value==v);return z?z.odd:''};
+      $('o1').value=val(1,'Home');$('ox').value=val(1,'Draw');$('o2').value=val(1,'Away');
+      $('oo').value=val(5,'Over 2.5');$('ou').value=val(5,'Under 2.5');$('ob').value=val(8,'Yes')}catch(e){}
+    st(note+'Готово'+(API?'. Совет API: '+API.adv:''));
+    calc();
+  }catch(e){st('Ошибка: '+e.message,1)}}
+
+function pois(l){const a=[Math.exp(-l)];for(let k=1;k<=N;k++)a.push(a[k-1]*l/k);return a}
+function matrix(lh,la,dc){
+  const ph=pois(lh),pa=pois(la),rho=-0.10,m=[];let s=0;
+  for(let i=0;i<=N;i++){m[i]=[];for(let j=0;j<=N;j++){let p=ph[i]*pa[j];
+    if(dc){if(i==0&&j==0)p*=1-lh*la*rho;else if(i==0&&j==1)p*=1+lh*rho;else if(i==1&&j==0)p*=1+la*rho;else if(i==1&&j==1)p*=1-rho}
+    m[i][j]=p;s+=p}}
+  for(let i=0;i<=N;i++)for(let j=0;j<=N;j++)m[i][j]/=s;return m}
+function sum(m){let h=0,d=0,a=0,b=0,ov={1.5:0,2.5:0,3.5:0},sc=[];
+  for(let i=0;i<=N;i++)for(let j=0;j<=N;j++){const p=m[i][j];
+    if(i>j)h+=p;else if(i==j)d+=p;else a+=p;if(i>0&&j>0)b+=p;
+    for(const k in ov)if(i+j>k)ov[k]+=p;sc.push([i+':'+j,p])}
+  sc.sort((x,y)=>y[1]-x[1]);return{h,d,a,b,ov,sc}}
+function split(e){let d=Math.max(0.14,0.30-0.14*Math.abs(2*e-1));let h=Math.max(0.02,e-d/2),a=Math.max(0.02,1-e-d/2);const t=h+d+a;return{h:h/t,d:d/t,a:a/t}}
+
+function calc(){
+  const L=num('lg')||2.7,ha=num('ha')||1;
+  const gfH=num('gfH'),gaH=num('gaH'),gfA=num('gfA'),gaA=num('gaA');
+  if([gfH,gaH,gfA,gaA].some(x=>x===null)){alert('Заполните голы: забивают и пропускают.');return}
+  const fH=num('fH')??7.5,fA=num('fA')??7.5,per=L/2;
+  const lh0=per*ha*(gfH/per)*(gaA/per),la0=(per/ha)*(gfA/per)*(gaH/per),k=0.10;
+  const pa=x=>(num(x)||0)/100;
+  let lh1=lh0*(1+k*(fH-7.5)/7.5)*(1-pa('aH'))*(1+pa('dA'));
+  let la1=la0*(1+k*(fA-7.5)/7.5)*(1-pa('aA'))*(1+pa('dH'));
+  const S1=sum(matrix(lh1,la1,true)),S2=sum(matrix(lh0,la0,false));
+  const M4=split(1/(1+Math.exp(-1.7*((fH-fA)/9+0.12))));
+  const meth=[['Пуассон+DC+форма+составы',S1,num('w1')],['Чистый Пуассон',S2,num('w2')],['Прогноз API-Football',API,num('w3')],['Форма',M4,num('w4')]];
+  let W=0,fh=0,fd=0,fa=0;
+  for(const[,r,w]of meth){if(!r||!w)continue;W+=w;fh+=r.h*w;fd+=r.d*w;fa+=r.a*w}
+  if(!W){alert('Задайте вес больше нуля.');return}
+  fh/=W;fd/=W;fa/=W;
+  const nh=esc($('nh').value||'Хозяева'),na=esc($('na').value||'Гости');
+  $('title').textContent=($('nh').value||'Хозяева')+' — '+($('na').value||'Гости');
+  $('bar').innerHTML=`<div style="width:${fh*100}%;background:var(--h)">${(fh*100).toFixed(0)}%</div><div style="width:${fd*100}%;background:var(--d)">${(fd*100).toFixed(0)}%</div><div style="width:${fa*100}%;background:var(--a)">${(fa*100).toFixed(0)}%</div>`;
+  $('leg').innerHTML=`<span>П1 ${nh}</span><span>Ничья</span><span>П2 ${na}</span>`;
+  $('fair').textContent=`Честные коэффициенты: П1 ${fo(fh)} · X ${fo(fd)} · П2 ${fo(fa)}`;
+  let t='<tr><th>Метод</th><th>П1</th><th>X</th><th>П2</th><th>Вес</th></tr>';
+  for(const[n,r,w]of meth)t+=r?`<tr><td>${n}</td><td>${pc(r.h)}</td><td>${pc(r.d)}</td><td>${pc(r.a)}</td><td>${w||0}%</td></tr>`:`<tr><td>${n}</td><td colspan="4">нет данных</td></tr>`;
+  t+=`<tr><td><b>Итог</b></td><td><b>${pc(fh)}</b></td><td><b>${pc(fd)}</b></td><td><b>${pc(fa)}</b></td><td></td></tr>`;
+  $('mt').innerHTML=t;
+  const row=(n,p,sc)=>`<div class="row"><span class="n">${n}</span><span class="t"><i style="width:${Math.min(100,p*100*(sc||1))}%"></i></span><span class="p">${pc(p)}</span></div>`;
+  const O=S1.ov;
+  $('tot').innerHTML=row('ТБ 1.5',O[1.5])+row('ТМ 1.5',1-O[1.5])+row('ТБ 2.5',O[2.5])+row('ТМ 2.5',1-O[2.5])+row('ТБ 3.5',O[3.5])+row('ТМ 3.5',1-O[3.5])+row('Обе забьют',S1.b)+row('Обе не забьют',1-S1.b);
+  $('lam').textContent=`Ожидаемые голы: ${$('nh').value} ${lh1.toFixed(2)}, ${$('na').value} ${la1.toFixed(2)}, всего ${(lh1+la1).toFixed(2)}`;
+  const dnb=fh+fa;
+  const dcr=[['1X',fh+fd],['X2',fd+fa],['12',fh+fa],['Фора хозяев 0',fh/dnb],['Фора гостей 0',fa/dnb]];
+  $('dc').innerHTML='<tr><th>Рынок</th><th>Вероятность</th><th>Честный к.</th></tr>'+dcr.map(r=>`<tr><td>${r[0]}</td><td>${pc(r[1])}</td><td>${fo(r[1])}</td></tr>`).join('');
+  $('sc').innerHTML=S1.sc.slice(0,6).map(x=>row(x[0].replace(':',' : '),x[1],5)).join('');
+  const vs=[['П1',fh,num('o1')],['X',fd,num('ox')],['П2',fa,num('o2')],['ТБ 2.5',O[2.5],num('oo')],['ТМ 2.5',1-O[2.5],num('ou')],['Обе забьют',S1.b,num('ob')]].filter(r=>r[2]);
+  $('vsec').style.display=vs.length?'block':'none';
+  $('vt').innerHTML='<tr><th>Исход</th><th>Модель</th><th>Кэф</th><th>Value</th></tr>'+vs.map(([n,p,o])=>{const e=p*o-1;return `<tr><td>${n}</td><td>${pc(p)}</td><td>${o.toFixed(2)}</td><td class="${e>0.03?'val':''}">${e>0?'+':''}${(e*100).toFixed(1)}%</td></tr>`}).join('');
+  $('out').style.display='block';$('out').scrollIntoView({behavior:'smooth'})}
+$('go').onclick=calc;
+</script>
+</body>
+</html>
